@@ -1,0 +1,119 @@
+# Task-family taxonomy for the 4311-problem linear algebra corpus.
+#
+# A task family is a cluster of problems that (we hypothesize) share a reusable
+# computational subroutine. Causal claims are made at the family level:
+#   "ablating feature F breaks family X at rate Y%, hurts family Z less".
+#
+# Each family has:
+#   id:          short slug (used in splits, reports, feature tables)
+#   subroutine:  one-line description of the shared mental operation
+#   keywords:    lowercase terms in the problem text that auto-suggest this family
+#                (used by data/task_families.py as a pre-labeling heuristic;
+#                 a human must confirm)
+#   chapters:    optional author→chapter filter that narrows candidates
+#                (empty means consider any chapter)
+#   examples:    2-3 problem_ids known to belong (populated after labeling)
+#
+# Keep this file editable by hand. Auto-labeling only suggests; humans decide.
+
+families:
+
+  - id: generalized_eigenvector_construction
+    subroutine: "Construct v and T such that (T - λI)^k v = 0 but (T - λI)^(k-1) v ≠ 0."
+    keywords: ["generalized eigenvector", "generalized eigenspace", "(t - ", "jordan"]
+    chapters: {axler: ["8A", "8B", "8C", "8D"]}
+    examples: []
+
+  - id: nilpotent_construction
+    subroutine: "Build operator / matrix T with T^k = 0 for given k; verify nilpotency."
+    keywords: ["nilpotent", "t^n = 0", "t^k = 0", "k-nilpotent"]
+    chapters: {}
+    examples: []
+
+  - id: char_min_poly_compute
+    subroutine: "Compute characteristic polynomial and/or minimal polynomial of a concrete operator."
+    keywords: ["characteristic polynomial", "minimal polynomial", "char poly", "min poly"]
+    chapters: {}
+    examples: []
+
+  - id: char_min_poly_construct
+    subroutine: "Given a polynomial, construct an operator with that characteristic / minimal polynomial."
+    keywords: ["construct", "find an operator", "characteristic polynomial", "minimal polynomial"]
+    chapters: {}
+    examples: []
+
+  - id: eigenvalue_find
+    subroutine: "Compute eigenvalues of a given matrix / operator."
+    keywords: ["find the eigenvalues", "eigenvalues of", "compute the eigenvalues"]
+    chapters: {}
+    examples: []
+
+  - id: eigenvector_find
+    subroutine: "Compute eigenvectors / eigenspaces for a given operator and eigenvalue."
+    keywords: ["find the eigenvectors", "eigenspace", "eigenvectors of"]
+    chapters: {}
+    examples: []
+
+  - id: diagonalization
+    subroutine: "Decide diagonalizability and (if yes) produce P, D with A = P D P^{-1}."
+    keywords: ["diagonalizable", "diagonalize", "p d p"]
+    chapters: {}
+    examples: []
+
+  - id: jordan_basis
+    subroutine: "Produce a Jordan basis / Jordan form of a given operator."
+    keywords: ["jordan basis", "jordan form", "jordan block"]
+    chapters: {}
+    examples: []
+
+  - id: kernel_range_compute
+    subroutine: "Compute ker(T), range(T), or null(T); give basis or dimension."
+    keywords: ["null space", "kernel", "ker(", "range of", "null(", "image of"]
+    chapters: {}
+    examples: []
+
+  - id: rank_nullity
+    subroutine: "Apply rank-nullity: dim ker + dim range = dim V. Compute the missing side."
+    keywords: ["rank", "nullity", "rank-nullity", "dim null", "dim range"]
+    chapters: {}
+    examples: []
+
+  - id: linear_independence_span
+    subroutine: "Decide linear independence or spanning for a concrete vector list."
+    keywords: ["linearly independent", "linearly dependent", "spans", "span of"]
+    chapters: {}
+    examples: []
+
+  - id: basis_construct
+    subroutine: "Find or extend a basis for a given subspace / vector space."
+    keywords: ["find a basis", "basis of", "basis for"]
+    chapters: {}
+    examples: []
+
+  - id: subspace_check
+    subroutine: "Verify whether a subset is closed under addition / scalar multiplication → subspace."
+    keywords: ["subspace of", "is a subspace"]
+    patterns: ["show that\\s+.*subspace"]
+    chapters: {}
+    examples: []
+
+  - id: counterexample_construct
+    subroutine: "Produce a concrete small counterexample refuting a stated claim."
+    keywords: ["counterexample", "give an example", "false", "not true"]
+    chapters: {}
+    examples: []
+
+  - id: proof_structural
+    subroutine: "Prove a general structural statement (no concrete computation)."
+    keywords: ["prove that", "show that", "suppose"]
+    chapters: {}
+    examples: []
+
+# Families tagged `proof_structural` are the default catch-all. Prefer a more
+# specific family if the problem involves a concrete construction or computation.
+
+auto_label:
+  # When applying keywords, scan question text (lowercased). First family whose
+  # keyword matches wins — order families above from most-specific to least.
+  case_sensitive: false
+  match_against: question

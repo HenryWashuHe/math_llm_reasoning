@@ -1,0 +1,64 @@
+Experiment Set Up
+
+Dataset: Exercises retrieved from 6 linear Algebra Textbooks
+Feature discovery set
+Intervention validation set (held-out)
+
+Model for Math Reasoning: Gemma-3-27b-it
+SAE: Gemma scope 2 
+RAG embedding model: text-embedding-3-large  from openai
+General Claim trying to make: Retrieval works because it activates sparse, reusable computational subroutines encoded as SAE features, which are causally necessary for mathematical reasoning, No prior work clearly shows a causally validated sparse feature subroutine for retrieval-augmented mathematical reasoning. 
+Or Safer version: In a subset of linear algebra problems, retrieval improves performance partly by activating sparse internal features associated with reusable reasoning routines; these features are causally important for successful inference on those tasks.
+
+Pipeline:
+Constructing Input
+Group 1(no context): Raw Exercises without any contexts
+Group 2(retrieved-context): Raw Exercise with RAG retrieved-context from textbooks(Or GPT 4o curated context if RAG retrieved not working well)
+by gpt curated, I mean that we are asking gpt to find relevant context in the textbook from the corresponding chapter with the problem. so the context is from textbook
+Group 3(sham-context): Raw Exercise with irrelevant context from textbooks 
+Irrelevant textbook context from linear algebra
+same domain, wrong concept
+Relevant-looking but wrong concept
+e.g. eigenvalue text for a row-space problem
+Length-matched random textbook passage
+controls for token count and style
+Feed in Gemma 3 27b
+Feed the response of Gemma 3 27b into LLM as a judge
+Extracting Context-helped pair
+By context-helped pair here, I mean by finding the question that model got it wrong without context and being able to get it correct with the retrieved contexts. 
+Then, we first save the mean diff or the vector(correct - incorrect) in model’s activation space at the corresponding layers we later do SAE on. 
+Then, hook the SAE layers, and put the activation into SAE.
+Here, we are trying to find, for a specific task family (questions from a similar setup that need similar subroutine so solve), the candidate features that are fired up intensively across the questions from that task family that model solve it correctly with the context but the features did not get fired when the model fail initially without context. 
+Feature discovery: For each generation, we extract per-token SAE activations across all generated tokens (not prompt tokens). We record per-token top-k sparse activations (indices and values) and compute three summary statistics per feature: sum activation, max activation, and top-k count across the generation. For candidate screening, we use the mean activation vector across generated tokens to compute effect sizes between positive/negative pairs. We validate candidates with token-level activation traces showing where in the generation each feature fires.
+Check: do these candidate features also fire when the model succeeds without context on other problems?
+Intervention: In mech interpre, need bidirectional to make a strong claim and identify causal rather correlation 
+Ablation
+With earlier candidate features identified, we will first do ablation. The exact way we do it is we first take the activation, we project into the SAE sparse high D space, we zero out those candidate features, and then, we decode it back to model dimension and let model continue inference from there.  
+A few set up experimented and need to be run
+Ablation during only at decode stage: effect still there, not as strong.
+Ablation during both prompt and decode stage: Found one candidate feature from specific family break 50% for that task family questions.
+Other than stage we do ablation, we also should do ablation of different candidate features alone and all of those candidate features combined: empirically, i think all of them combined for a specific task family I run test on break 60%. The intuition of not breaking all of them is prob because there’s redundant paths exists to solve the problem
+We have to also run test on non task family tasks, and ideally hurt less or none on those but break a lot on task family
+Maybe reduce feature activation by 25%, 50%, 75%, 100% instead of just zeroing.
+Steering 
+For steering, similar to ablation, we do at decode and prompt stage with various delta(1.0, 1.5, 2.5, 6) → how much we are steering it
+strongest(13%) if we do it at prompt and decode stage. And steering in nature will have less effect than ablation
+By 13% here, the baseline is regenerate it
+Once we manually inspected and understand the feature’s corresponding subroutines, we wanna test it in other task families that we require same subroutine but semantically different, and if same candidate features are activated and find bidirectional property, we can then claim this is not task specific or semantic but rather actual subroutine. 
+A few other baselines need to be ran
+Activation Steering Baseline
+Use earlier saved vector in 4.2 and then we steered at different stages and intensity as we do for sae and hopefully we show that sae steering has way stronger effect on helping the model. 
+Zeroing out random sae features
+We will zero out some random sae features(prob consistent with num of candidate or other set up, not sure yet) and continue to run the model 
+So here, we are trying to show that the model break not because some random sae features are zero out but if and only if we zero out the candidate features we identified earlier. 
+Other features can be zero out to have stronger control 
+random features matched by average activation magnitude
+top activated non-candidate features
+features from a different task family
+same number of features, same total intervention norm 
+Linear Probe baseline,
+Here, just have a linear classifier on acicvation space and on sae space and see if sae can predict better whether the model can get it right. 
+SAE Pass Through baseline, so make sure reconstruction error from sae will not break model generation
+Run all above on multi layers to make a more generalizable claim. 
+Run all above on different model families(Qwen, Llama) to make even more generalizable claim if possible
+
